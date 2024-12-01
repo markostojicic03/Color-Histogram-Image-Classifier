@@ -1,3 +1,5 @@
+from functools import reduce
+
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,7 +8,15 @@ import os
 from urllib.request import urlretrieve
 import tarfile
 from collections import defaultdict
+import ssl
+import matplotlib
+# Onemogućavamo proveru sertifikata (privremeno rešenje)
+ssl._create_default_https_context = ssl._create_unverified_context
+matplotlib.use('TkAgg')  # Postavlja Tkinter kao backend za prikaz grafika
+plt.figure(figsize=(8, 6))  # Širina 8, visina 6 inča
+import matplotlib as mpl
 
+mpl.rcParams['figure.dpi'] = 80
 
 #DICT ZA SLIKE
 def download_and_extract_cifar10(root='./data'):
@@ -140,43 +150,52 @@ NUM_BINS = 8
 def calculate_normalized_bins_histograms(image_path):
     image = Image.open(image_path)
 
-    #pretvaramo sliku u RGB format(ako nije vec u tom formatu)
+    # Pretvaramo sliku u RGB format (ako nije vec u tom formatu)
     image = image.convert('RGB')
 
     width, height = image.size
 
-    #dimenzije svakog bina(raspon vrednosti u jednom binu, koliki interval gledamo u odnosu na broj binova)
+    # Dimenzije svakog bina
     bin_size = 256 // NUM_BINS
 
-    #inicijalizujemo histograme za R, G i B komponente
-    r_hist = np.zeros(NUM_BINS, dtype=np.float32)
-    g_hist = np.zeros(NUM_BINS, dtype=np.float32)
-    b_hist = np.zeros(NUM_BINS, dtype=np.float32)
+    # Funkcija za obradu pojedinačnog piksela
+    def process_pixel(pixel):
+        r, g, b = pixel
+        return (
+            r // bin_size,
+            g // bin_size,
+            b // bin_size
+        )
 
-    #iteracija kroz piksele slike
-    for y in range(height):
-        for x in range(width):
-            r, g, b = image.getpixel((x, y))
+    # Transformacija svih piksela slike u indekse binova
+    pixels = list(image.getdata())
+    bin_indices = map(process_pixel, pixels)
 
-            #izracunavamo indeks odgovarajuceg bina
-            r_bin = r // bin_size
-            g_bin = g // bin_size
-            b_bin = b // bin_size
+    # Funkcija za akumulaciju vrednosti binova
+    def accumulate_bins(hist, bin_index):
+        r_bin, g_bin, b_bin = bin_index
+        hist[0][r_bin] += 1
+        hist[1][g_bin] += 1
+        hist[2][b_bin] += 1
+        return hist
 
-            #povecavamo vrednost u odgovarajucem binu
-            r_hist[r_bin] += 1
-            g_hist[g_bin] += 1
-            b_hist[b_bin] += 1
+    # Početni histogrami za R, G, i B komponente
+    initial_hist = [
+        np.zeros(NUM_BINS, dtype=np.float32),
+        np.zeros(NUM_BINS, dtype=np.float32),
+        np.zeros(NUM_BINS, dtype=np.float32)
+    ]
 
-    #normalizacija histograma(podela sa ukupnim brojem piksela)
+    # Suma preko svih binova uz pomoć reduce
+    histograms = reduce(accumulate_bins, bin_indices, initial_hist)
+
+    # Normalizacija histograma
     total_pixels = width * height
-    r_hist /= total_pixels
-    g_hist /= total_pixels
-    b_hist /= total_pixels
+    
+    histograms = [hist / total_pixels for hist in histograms]
 
-    #vracamo rezultat kao numpy matricu
-    return np.stack([r_hist, g_hist, b_hist], axis=0)
-
+    # Vraćamo rezultat kao numpy matricu
+    return np.stack(histograms, axis=0)
 
 
 
@@ -251,8 +270,7 @@ if __name__ == '__main__':
     plot_histograms(hist1, NUM_BINS)
     plot_histograms(hist2, NUM_BINS)
 
-    '''''
+
     similarity = cosine_similarity(hist1, hist2)
 
     print(f'Kosinusna sličnost između dve slike je: {similarity:.4f}')
-    '''''
