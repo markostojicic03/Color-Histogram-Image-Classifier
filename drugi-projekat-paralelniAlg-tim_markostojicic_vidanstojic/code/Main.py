@@ -7,6 +7,7 @@ from urllib.request import urlretrieve
 import tarfile
 from collections import defaultdict
 
+
 #DICT ZA SLIKE
 def download_and_extract_cifar10(root='./data'):
     """
@@ -120,6 +121,8 @@ for class_name, images in balanced_cifar.items():
     print(f"{class_name}: {len(images)} images, shape: {images[0].shape}")
 """
 
+
+'''
 balanced_cifar = load_balanced_cifar10(samples_per_class=100)
 
 airplane = balanced_cifar['airplane'][1]
@@ -129,7 +132,7 @@ plt.figure(figsize=(3, 3))
 plt.imshow(airplane)
 plt.axis('off')
 plt.show()
-
+'''''
 
 #konstanta za broj binova
 NUM_BINS = 8
@@ -173,6 +176,9 @@ def calculate_normalized_bins_histograms(image_path):
 
     #vracamo rezultat kao numpy matricu
     return np.stack([r_hist, g_hist, b_hist], axis=0)
+
+
+
 
 
 
@@ -227,18 +233,26 @@ def cosine_similarity(hist1, hist2):
     return similarity
 
 
-
+'''
+print(hist1)
+    print("------------------------------------------------------------")
+    print(hist2)
+'''
 
 
 if __name__ == '__main__':
-    image_path1 = '/content/auto.png'
-    image_path2 = '/content/kocije.jpg'
+    image_path1 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika1.jpg"
+    image_path2 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika2.jpg"
 
     hist1 = calculate_normalized_bins_histograms(image_path1)
     hist2 = calculate_normalized_bins_histograms(image_path2)
 
+
     plot_histograms(hist1, NUM_BINS)
     plot_histograms(hist2, NUM_BINS)
 
+    '''''
     similarity = cosine_similarity(hist1, hist2)
+
     print(f'Kosinusna sličnost između dve slike je: {similarity:.4f}')
+    '''''
