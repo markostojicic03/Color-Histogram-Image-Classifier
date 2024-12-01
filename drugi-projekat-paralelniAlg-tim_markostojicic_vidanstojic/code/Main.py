@@ -191,8 +191,8 @@ def calculate_normalized_bins_histograms(image_path):
 
     # Normalizacija histograma
     total_pixels = width * height
-    
-    histograms = [hist / total_pixels for hist in histograms]
+
+    histograms = list(map(lambda hist: hist / total_pixels, histograms))
 
     # Vraćamo rezultat kao numpy matricu
     return np.stack(histograms, axis=0)
