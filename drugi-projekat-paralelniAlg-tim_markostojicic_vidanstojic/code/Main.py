@@ -75,7 +75,8 @@ def load_balanced_cifar10(samples_per_class=100, root='./data', train=True):
 
     # Initialize dictionary to store images by class
     class_images = defaultdict(list)
-    class_counts = {name: 0 for name in class_names}
+    class_counts = reduce(lambda cnt, name: cnt.update({name: 0}) or cnt, class_names, {})
+    #class_counts = {name: 0 for name in class_names}
 
     if train:
         # Load training batches (1-5)
@@ -107,13 +108,13 @@ def load_balanced_cifar10(samples_per_class=100, root='./data', train=True):
                 class_counts[class_name] += 1
 
             # Check if we've collected enough samples for all classes
-            if all(count >= samples_per_class for count in class_counts.values()):
+            if all(map(lambda count: count >= samples_per_class, class_counts.values())):
                 break
 
         # If we have enough samples, stop processing batches
-        if all(count >= samples_per_class for count in class_counts.values()):
+        if all(map(lambda count: count >= samples_per_class, class_counts.values())):
             break
-
+        print("gotovoopo")
     # Convert defaultdict to regular dict
     return dict(class_images)
 
@@ -132,7 +133,7 @@ for class_name, images in balanced_cifar.items():
 """
 
 
-'''
+
 balanced_cifar = load_balanced_cifar10(samples_per_class=100)
 
 airplane = balanced_cifar['airplane'][1]
@@ -142,7 +143,7 @@ plt.figure(figsize=(3, 3))
 plt.imshow(airplane)
 plt.axis('off')
 plt.show()
-'''''
+
 
 #konstanta za broj binova
 NUM_BINS = 8
@@ -206,8 +207,7 @@ def plot_histograms(histograms, bins_num):
     labels = ['Red', 'Green', 'Blue']  #oznake za komponente
 
     #petlja kroz tri komponente(R, G, B)
-    for i in range(3):
-        plt.plot(histograms[i], color=colors[i], label=f'{labels[i]} Component')
+    list(map(lambda i: plt.plot(histograms[i], color=colors[i], label=f'{labels[i]} Component'), range(3)))
 
     #plt.ylim(0, 1)  #Y-osa od 0 do 1
     plt.title('Normalized Color Histograms')
@@ -219,14 +219,15 @@ def plot_histograms(histograms, bins_num):
 
     print(f"BINS: ")
     bin_width = 256 // bins_num
-    for i in range(bins_num):
+    def bin(i:int):
         start = i * bin_width
         end = (i + 1) * bin_width
         print(f"\t Bin {i}: {start}-{end}")
+    list(map(lambda i: bin(i), range(bins_num)))
+
 
     print("Normalized Histograms (RGB):")
-    for i in range(3):
-        print(f"\t {labels[i]} histogram:  {histograms[i]}")
+    list(map(lambda i: print(f"\t {labels[i]} histogram:  {histograms[i]}"), range(3)))
 
 
 
@@ -260,8 +261,11 @@ print(hist1)
 
 
 if __name__ == '__main__':
-    image_path1 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika1.jpg"
-    image_path2 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika2.jpg"
+
+    image_path1 = "C:/Users/vidan_gofx79m/Desktop/paralelni/drugiProjekat/p24-25-drugi-projekat-tim_markostojicic_vidanstojic/drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic/imageResources/slika1.jpg"
+    # image_path1 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika1.jpg"
+    # image_path2 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika2.jpg"
+    image_path2 = "C:/Users/vidan_gofx79m/Desktop/paralelni/drugiProjekat/p24-25-drugi-projekat-tim_markostojicic_vidanstojic/drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic/imageResources/slika2.jpg"
 
     hist1 = calculate_normalized_bins_histograms(image_path1)
     hist2 = calculate_normalized_bins_histograms(image_path2)
