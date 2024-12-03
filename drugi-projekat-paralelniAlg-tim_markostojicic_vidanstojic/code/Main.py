@@ -135,8 +135,10 @@ for class_name, images in balanced_cifar.items():
 
 
 balanced_cifar = load_balanced_cifar10(samples_per_class=100)
+"""
+PROBA ZA SLIKE(FAJL OD PROFESORA)
 
-airplane = balanced_cifar['airplane'][1]
+airplane = balanced_cifar['airplane'][2]
 
 # Display the image
 plt.figure(figsize=(3, 3))
@@ -144,13 +146,13 @@ plt.imshow(airplane)
 plt.axis('off')
 plt.show()
 
-
+"""
 #konstanta za broj binova
 NUM_BINS = 8
 
-def calculate_normalized_bins_histograms(image_path):
-    image = Image.open(image_path)
-
+def calculate_normalized_bins_histograms(imageArray):
+    image = Image.fromarray(imageArray)
+    print(type(image))
     # Pretvaramo sliku u RGB format (ako nije vec u tom formatu)
     image = image.convert('RGB')
 
@@ -198,11 +200,26 @@ def calculate_normalized_bins_histograms(image_path):
     # Vraćamo rezultat kao numpy matricu
     return np.stack(histograms, axis=0)
 
+"""
+dict["dog"][1]
+
+"""
+
+
+def calculate_histogram_dict(balanced_cifar):
+    # proveriti da li da stavimo slican kod kao iz plothisograms(kada smo imali i koji se povecava)
+
+    def calculateForOneImage(images):#ovde se zove calculate za svaku sliku iz klase koja mu je poslata
+        return list(map(calculate_normalized_bins_histograms, images))
+
+
+    return calculateForOneImage(balanced_cifar['dog'][1])
+   # return list(map(lambda i: calculateForOneImage(balanced_cifar["dog"][1]),range(9))) #proveriti da li na ispravan nacin prolazi kroz sve klase
 
 
 
 
-def plot_histograms(histograms, bins_num):
+def plot_histograms(histograms, bins_num=NUM_BINS):
     colors = ['red', 'green', 'blue']  #boje za svaku komponentu
     labels = ['Red', 'Green', 'Blue']  #oznake za komponente
 
@@ -262,19 +279,21 @@ print(hist1)
 
 if __name__ == '__main__':
 
-    image_path1 = "C:/Users/vidan_gofx79m/Desktop/paralelni/drugiProjekat/p24-25-drugi-projekat-tim_markostojicic_vidanstojic/drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic/imageResources/slika1.jpg"
-    # image_path1 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika1.jpg"
-    # image_path2 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika2.jpg"
-    image_path2 = "C:/Users/vidan_gofx79m/Desktop/paralelni/drugiProjekat/p24-25-drugi-projekat-tim_markostojicic_vidanstojic/drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic/imageResources/slika2.jpg"
+    #image_path1 = "C:/Users/vidan_gofx79m/Desktop/paralelni/drugiProjekat/p24-25-drugi-projekat-tim_markostojicic_vidanstojic/drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic/imageResources/slika1.jpg"
+    #image_path1 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika1.jpg"
+    #image_path2 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika2.jpg"
+    #image_path2 = "C:/Users/vidan_gofx79m/Desktop/paralelni/drugiProjekat/p24-25-drugi-projekat-tim_markostojicic_vidanstojic/drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic/imageResources/slika2.jpg"
 
-    hist1 = calculate_normalized_bins_histograms(image_path1)
-    hist2 = calculate_normalized_bins_histograms(image_path2)
+   # hist1 = calculate_normalized_bins_histograms(image_path1)
+   # hist2 = calculate_normalized_bins_histograms(image_path2)
+
+    hist = calculate_histogram_dict(balanced_cifar)
+    map(plot_histograms(), hist)
+
+   # plot_histograms(hist1, NUM_BINS)
+   # plot_histograms(hist2, NUM_BINS)
 
 
-    plot_histograms(hist1, NUM_BINS)
-    plot_histograms(hist2, NUM_BINS)
+   # similarity = cosine_similarity(hist1, hist2)
 
-
-    similarity = cosine_similarity(hist1, hist2)
-
-    print(f'Kosinusna sličnost između dve slike je: {similarity:.4f}')
+    #print(f'Kosinusna sličnost između dve slike je: {similarity:.4f}')
