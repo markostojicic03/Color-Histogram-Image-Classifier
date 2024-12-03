@@ -210,10 +210,11 @@ def calculate_histogram_dict(balanced_cifar):
     # proveriti da li da stavimo slican kod kao iz plothisograms(kada smo imali i koji se povecava)
 
     def calculateForOneImage(images):#ovde se zove calculate za svaku sliku iz klase koja mu je poslata
+        #return calculate_normalized_bins_histograms(images)
         return list(map(calculate_normalized_bins_histograms, images))
 
 
-    return calculateForOneImage(balanced_cifar['dog'][1])
+    return calculateForOneImage(balanced_cifar['dog'])
    # return list(map(lambda i: calculateForOneImage(balanced_cifar["dog"][1]),range(9))) #proveriti da li na ispravan nacin prolazi kroz sve klase
 
 
@@ -288,7 +289,8 @@ if __name__ == '__main__':
    # hist2 = calculate_normalized_bins_histograms(image_path2)
 
     hist = calculate_histogram_dict(balanced_cifar)
-    map(plot_histograms(), hist)
+    #plot_histograms(hist)
+    map(plot_histograms, hist)
 
    # plot_histograms(hist1, NUM_BINS)
    # plot_histograms(hist2, NUM_BINS)
