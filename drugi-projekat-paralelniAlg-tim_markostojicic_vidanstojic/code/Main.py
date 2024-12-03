@@ -207,15 +207,30 @@ dict["dog"][1]
 
 
 def calculate_histogram_dict(balanced_cifar):
-    # proveriti da li da stavimo slican kod kao iz plothisograms(kada smo imali i koji se povecava)
 
-    def calculateForOneImage(images):#ovde se zove calculate za svaku sliku iz klase koja mu je poslata
-        #return calculate_normalized_bins_histograms(images)
-        return list(map(calculate_normalized_bins_histograms, images))
+    def calculateForOneImage(class_name):#ovde se zove calculate za svaku sliku iz klase koja mu je poslata
+        images = balanced_cifar[class_name]
+        histograms = list(map(calculate_normalized_bins_histograms, images))
+        return class_name, histograms
 
 
-    return calculateForOneImage(balanced_cifar['dog'])
-   # return list(map(lambda i: calculateForOneImage(balanced_cifar["dog"][1]),range(9))) #proveriti da li na ispravan nacin prolazi kroz sve klase
+    #return calculateForOneImage(balanced_cifar['dog'])
+    return dict(map(calculateForOneImage, balanced_cifar.keys()))
+
+
+def calculate_average_histogram(class_name, histograms):
+    # potrebno je da imamo listu u kojoj cemo cuvati sve prosecne histograme od svake klase, dakle postojace neka lista(vrv globalna) koja u sebi sadrzi 10 razlicith histograma, gde svaki histogram predstavlja prosecni histogram za tu klasu(za dog, airplane itd.)
+    # kasnije kada budemo radili klasifikovanje, samo cemo preci kroz tu globalnu listu prosecnih histograma i videcemo kojem histogramu je najslicniji histogram od slike koju proveravamo
+
+    """"
+    Koraci:
+    1. U argumentu histograms se nalaze histogrami za svaku sliku iz klase koja je poslata(dakle tu imamo 100 razlicitih histograma).Kako izvuci svaki histogram jedan po jedan?
+    2. Kako sabrati sve njihove rgb-ove(posebno r, posebno g i posebno b)?
+    3. Nakon sto imas sabrane sve boje zasebno, onda izracunaj prosek tako sto podelis sa 100.
+    4. Povratna vrednost funkcije je prosecan histogram za datu klasu(taj prosecan histogram se dobija na osnovu prosecnih r,g,b).
+    5. Ukoliko je pravilno napisan map u main-u, trebalo bi da se za svaku klasu zove ova funkcija i da samim tim prodjemo sve slike.
+    """""
+
 
 
 
@@ -279,23 +294,20 @@ print(hist1)
 
 
 if __name__ == '__main__':
+    # Kreiranje rečnika histograma
+    histograms_dict = calculate_histogram_dict(balanced_cifar)
+    #calculate_average_histogram("dog", histograms_dict["dog"])
 
-    #image_path1 = "C:/Users/vidan_gofx79m/Desktop/paralelni/drugiProjekat/p24-25-drugi-projekat-tim_markostojicic_vidanstojic/drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic/imageResources/slika1.jpg"
-    #image_path1 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika1.jpg"
-    #image_path2 = "D:\\Marko workspace\\Fakultet\\Projekti\\p24-25-drugi-projekat-tim_markostojicic_vidanstojic\\drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic\\imageResources\\slika2.jpg"
-    #image_path2 = "C:/Users/vidan_gofx79m/Desktop/paralelni/drugiProjekat/p24-25-drugi-projekat-tim_markostojicic_vidanstojic/drugi-projekat-paralelniAlg-tim_markostojicic_vidanstojic/imageResources/slika2.jpg"
+   # average_histograms = dict(map(lambda item: calculate_average_histogram(item[0], item[1]), histograms_dict.items())) # proveriti da li se na ispravan nacin salje
 
-   # hist1 = calculate_normalized_bins_histograms(image_path1)
-   # hist2 = calculate_normalized_bins_histograms(image_path2)
+    print("mare")
+    # Funkcija za obradu svake klase
+    def process_class(class_name):
+        histograms = histograms_dict[class_name]
 
-    hist = calculate_histogram_dict(balanced_cifar)
-    #plot_histograms(hist)
-    map(plot_histograms, hist)
-
-   # plot_histograms(hist1, NUM_BINS)
-   # plot_histograms(hist2, NUM_BINS)
+        # Mapiranje za plotovanje svih histograma u trenutnoj klasi
+        list(map(lambda histogram: plot_histograms(histogram), histograms))
 
 
-   # similarity = cosine_similarity(hist1, hist2)
-
-    #print(f'Kosinusna sličnost između dve slike je: {similarity:.4f}')
+    # Mapiranje preko svih klasa u rečniku
+    list(map(process_class, histograms_dict.keys()))
