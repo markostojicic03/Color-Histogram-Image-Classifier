@@ -1,3 +1,4 @@
+from copy import deepcopy
 from functools import reduce
 
 from PIL import Image
@@ -11,9 +12,9 @@ from collections import defaultdict
 import ssl
 import matplotlib
 # Onemogućavamo proveru sertifikata (privremeno rešenje)
-ssl._create_default_https_context = ssl._create_unverified_context
-matplotlib.use('TkAgg')  # Postavlja Tkinter kao backend za prikaz grafika
-plt.figure(figsize=(8, 6))  # Širina 8, visina 6 inča
+#ssl._create_default_https_context = ssl._create_unverified_context
+#matplotlib.use('TkAgg')  # Postavlja Tkinter kao backend za prikaz grafika
+#plt.figure(figsize=(8, 6))  # Širina 8, visina 6 inča
 import matplotlib as mpl
 
 mpl.rcParams['figure.dpi'] = 80
@@ -152,7 +153,6 @@ NUM_BINS = 8
 
 def calculate_normalized_bins_histograms(imageArray):
     image = Image.fromarray(imageArray)
-    print(type(image))
     # Pretvaramo sliku u RGB format (ako nije vec u tom formatu)
     image = image.convert('RGB')
 
@@ -219,21 +219,18 @@ def calculate_histogram_dict(balanced_cifar):
 
 
 def calculate_average_histogram(class_name, histograms):
-    # potrebno je da imamo listu u kojoj cemo cuvati sve prosecne histograme od svake klase, dakle postojace neka lista(vrv globalna) koja u sebi sadrzi 10 razlicith histograma, gde svaki histogram predstavlja prosecni histogram za tu klasu(za dog, airplane itd.)
-    # kasnije kada budemo radili klasifikovanje, samo cemo preci kroz tu globalnu listu prosecnih histograma i videcemo kojem histogramu je najslicniji histogram od slike koju proveravamo
 
-    """"
-    Koraci:
-    1. U argumentu histograms se nalaze histogrami za svaku sliku iz klase koja je poslata(dakle tu imamo 100 razlicitih histograma).Kako izvuci svaki histogram jedan po jedan?
-    2. Kako sabrati sve njihove rgb-ove(posebno r, posebno g i posebno b)?
-    3. Nakon sto imas sabrane sve boje zasebno, onda izracunaj prosek tako sto podelis sa 100.
-    4. Povratna vrednost funkcije je prosecan histogram za datu klasu(taj prosecan histogram se dobija na osnovu prosecnih r,g,b).
-    5. Ukoliko je pravilno napisan map u main-u, trebalo bi da se za svaku klasu zove ova funkcija i da samim tim prodjemo sve slike.
-    """""
+    full_array = np.full((3, 8), 0.0)
+    avg = reduce(sub_hist, histograms,full_array)
+    povratna = np.array(list(map(lambda red: list(map(lambda x: x / 100, red)), avg)))
+    return povratna
 
+def sub_hist(acc, hist):
 
-
-
+    acc[0] += hist[0]
+    acc[1] += hist[1]
+    acc[2] += hist[2]
+    return acc
 
 def plot_histograms(histograms, bins_num=NUM_BINS):
     colors = ['red', 'green', 'blue']  #boje za svaku komponentu
@@ -296,11 +293,15 @@ print(hist1)
 if __name__ == '__main__':
     # Kreiranje rečnika histograma
     histograms_dict = calculate_histogram_dict(balanced_cifar)
-    #calculate_average_histogram("dog", histograms_dict["dog"])
+    
+    histograms_dict_copy = deepcopy(histograms_dict)
 
-   # average_histograms = dict(map(lambda item: calculate_average_histogram(item[0], item[1]), histograms_dict.items())) # proveriti da li se na ispravan nacin salje
+    average_histograms = dict(map(
+            lambda item: (item[0], calculate_average_histogram(item[0], histograms_dict_copy.pop(item[0]))),
+            list(histograms_dict_copy.items())
+        ))
 
-    print("mare")
+    print(average_histograms)
     # Funkcija za obradu svake klase
     def process_class(class_name):
         histograms = histograms_dict[class_name]
