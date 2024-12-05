@@ -12,9 +12,9 @@ from collections import defaultdict
 import ssl
 import matplotlib
 # Onemogućavamo proveru sertifikata (privremeno rešenje)
-#ssl._create_default_https_context = ssl._create_unverified_context
-#matplotlib.use('TkAgg')  # Postavlja Tkinter kao backend za prikaz grafika
-#plt.figure(figsize=(8, 6))  # Širina 8, visina 6 inča
+ssl._create_default_https_context = ssl._create_unverified_context
+matplotlib.use('TkAgg')  # Postavlja Tkinter kao backend za prikaz grafika
+plt.figure(figsize=(8, 6))  # Širina 8, visina 6 inča
 import matplotlib as mpl
 
 mpl.rcParams['figure.dpi'] = 80
@@ -136,10 +136,9 @@ for class_name, images in balanced_cifar.items():
 
 
 balanced_cifar = load_balanced_cifar10(samples_per_class=100)
-"""
-PROBA ZA SLIKE(FAJL OD PROFESORA)
 
-airplane = balanced_cifar['airplane'][2]
+
+airplane = balanced_cifar['airplane'][5]
 
 # Display the image
 plt.figure(figsize=(3, 3))
@@ -147,7 +146,6 @@ plt.imshow(airplane)
 plt.axis('off')
 plt.show()
 
-"""
 #konstanta za broj binova
 NUM_BINS = 8
 
@@ -226,12 +224,11 @@ def calculate_average_histogram(class_name, histograms):
     return povratna
 
 def sub_hist(acc, hist):
-
     acc[0] += hist[0]
     acc[1] += hist[1]
     acc[2] += hist[2]
     return acc
-
+# proveriti detaljnije sub_hist i deljenje niza sa 100 unutar calculate_average_histogram(vektorizovano izracunavanje)
 def plot_histograms(histograms, bins_num=NUM_BINS):
     colors = ['red', 'green', 'blue']  #boje za svaku komponentu
     labels = ['Red', 'Green', 'Blue']  #oznake za komponente
@@ -262,7 +259,8 @@ def plot_histograms(histograms, bins_num=NUM_BINS):
 
 
 
-
+import numpy as np
+from numpy.linalg import norm
 #TREBA ISPRAVITI DA U KODU NEMAMO LINALG I DOT I SKALARNI PROIZVOD
 def cosine_similarity(hist1, hist2):
     # flattenovanje histogram matrica u 1D nizove
@@ -281,9 +279,32 @@ def cosine_similarity(hist1, hist2):
     #kosinusna slicnost
     similarity = dot_product / (norm1 * norm2)
     return similarity
+    '''''
+    # compute cosine similarity
+    cosine = np.sum(hist1 * hist2, axis=1) / (norm(hist1, axis=1) * norm(hist2, axis=1))
 
 
-'''
+    if cosine.ndim > 0:
+        return np.max(cosine)  # Vraća maksimalnu sličnost u nizu
+    return cosine  # Vraća samo skalar
+    '''''
+def image_classifier(image_path, average_histograms_dict):
+    # Ovde sam izvukao objekat klase Image preko putanje slike, zatim sam pretvorio taj image u array(zato sto calculate ocekuje argument koji je array) i zatim sam izracunao histogram za tu sliku.
+    image = Image.open(image_path)
+    image_array = np.array(image)
+    histogram_for_image = calculate_normalized_bins_histograms(image_array)
+    # Sada je potrebno da poredimo dobijeni histogram sa prosecnim histogramom svake klase koristeci kosinusnu slicnost.
+    average_histograms_dict_copy =  deepcopy(average_histograms_dict)
+    result_cosine_similarity = map(
+        lambda item: (item[0],  cosine_similarity(histogram_for_image, average_histograms_dict_copy.pop(item[0]))),
+        list(average_histograms_dict_copy.items())
+    )
+
+    most_similar_class, max_similarity = max(result_cosine_similarity, key=lambda x: x[1])
+    # Ispis rezultata
+    print("Most similar class:", most_similar_class)
+    print("Max cosine similarity:", max_similarity)
+    '''
 print(hist1)
     print("------------------------------------------------------------")
     print(hist2)
@@ -299,9 +320,16 @@ if __name__ == '__main__':
     average_histograms = dict(map(
             lambda item: (item[0], calculate_average_histogram(item[0], histograms_dict_copy.pop(item[0]))),
             list(histograms_dict_copy.items())
-        ))
+    ))
 
-    print(average_histograms)
+    #print(average_histograms)
+   # image_classifier("../imageResources/primerAvion2.jpg", average_histograms)
+    similarity = cosine_similarity(average_histograms['dog'], average_histograms['frog'])
+    print(similarity)
+
+    """"
+    OVDE SE ISPISUJU HISTOGRAMI POMOCU PLOT_HISTOGRAMS
+    
     # Funkcija za obradu svake klase
     def process_class(class_name):
         histograms = histograms_dict[class_name]
@@ -312,3 +340,5 @@ if __name__ == '__main__':
 
     # Mapiranje preko svih klasa u rečniku
     list(map(process_class, histograms_dict.keys()))
+
+   """""
