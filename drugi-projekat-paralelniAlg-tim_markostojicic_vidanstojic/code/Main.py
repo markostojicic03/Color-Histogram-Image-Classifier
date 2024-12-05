@@ -280,20 +280,24 @@ def cosine_similarity(hist1, hist2):
     flat_hist1 = hist1.flatten()
     flat_hist2 = hist2.flatten()
 
-    dot_product = np.dot(flat_hist1, flat_hist2)  #skalarni proizvod histograma(vektora)
-    norm1 = np.linalg.norm(flat_hist1)  #duzina prvog vektora
-    norm2 = np.linalg.norm(flat_hist2)  #duzina drugog vektora
-
+    dot_product = mul_arr(flat_hist1, flat_hist2)
+    sum_of_products = reduce(lambda acc, number: acc + number, dot_product)
+    norm1 = reduce(lambda acc, number: acc + number ** 2, flat_hist1, 0) ** 0.5
+    norm2 = reduce(lambda acc, number: acc + number ** 2, flat_hist2, 0) ** 0.5
     #provera zbog deljenja s nulom
     if norm1 == 0 or norm2 == 0:
         #ako je jedan vektor nula, slicnost je 0
         return 0.0
 
     #kosinusna slicnost
-    similarity = dot_product / (norm1 * norm2)
+    similarity = sum_of_products / (norm1 * norm2)
     return similarity
 
+def mul_arr(arr1, arr2):
+    return np.array(list(map(lambda item: arr1[item] * arr2[item], range(24))))
 
+def add_append(array, x):
+  return lambda item: array[item] + x
 '''
 print(hist1)
     print("------------------------------------------------------------")
@@ -320,6 +324,7 @@ if __name__ == '__main__':
         # Mapiranje za plotovanje svih histograma u trenutnoj klasi
         list(map(lambda histogram: plot_histograms(histogram), histograms))
 
-
+    similarity = cosine_similarity(average_histograms['dog'], average_histograms['frog'])
+    print(similarity)
     # Mapiranje preko svih klasa u rečniku
     list(map(process_class, histograms_dict.keys()))
