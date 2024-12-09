@@ -220,15 +220,27 @@ def calculate_average_histogram(class_name, histograms):
 
     full_array = np.full((3, 8), 0.0)
     avg = reduce(sub_hist, histograms,full_array)
-    povratna = np.array(list(map(lambda red: list(map(lambda x: x / 100, red)), avg)))
-    return povratna
+    return div_hist(avg)
 
-def sub_hist(acc, hist):
-    acc[0] += hist[0]
-    acc[1] += hist[1]
-    acc[2] += hist[2]
-    return acc
-# proveriti detaljnije sub_hist i deljenje niza sa 100 unutar calculate_average_histogram(vektorizovano izracunavanje)
+def sub_hist(full_array, hist):
+
+    full_array[0] = sub_arr(full_array[0], hist[0])
+    full_array[1] = sub_arr(full_array[1], hist[1])
+    full_array[2] = sub_arr(full_array[2], hist[2])
+    return full_array
+
+def sub_arr(arr1, arr2):
+    return np.array(list(map(lambda item: arr1[item] + arr2[item], range(8))))
+
+def div_hist(avg):
+    avg[0] = div_arr(avg[0], 100)
+    avg[1] = div_arr(avg[1], 100)
+    avg[2] = div_arr(avg[2], 100)
+    return avg
+
+def div_arr(arr, x):
+    return np.array(list(map(lambda item: arr[item] / x, range(8))))
+
 def plot_histograms(histograms, bins_num=NUM_BINS):
     colors = ['red', 'green', 'blue']  #boje za svaku komponentu
     labels = ['Red', 'Green', 'Blue']  #oznake za komponente
@@ -267,22 +279,24 @@ def cosine_similarity(hist1, hist2):
     flat_hist1 = hist1.flatten()
     flat_hist2 = hist2.flatten()
 
-    dot_product = np.dot(flat_hist1, flat_hist2)  #skalarni proizvod histograma(vektora)
-    norm1 = np.linalg.norm(flat_hist1)  #duzina prvog vektora
-    norm2 = np.linalg.norm(flat_hist2)  #duzina drugog vektora
-
+    dot_product = mul_arr(flat_hist1, flat_hist2)
+    sum_of_products = reduce(lambda acc, number: acc + number, dot_product)
+    norm1 = reduce(lambda acc, number: acc + number ** 2, flat_hist1, 0) ** 0.5
+    norm2 = reduce(lambda acc, number: acc + number ** 2, flat_hist2, 0) ** 0.5
     #provera zbog deljenja s nulom
     if norm1 == 0 or norm2 == 0:
         #ako je jedan vektor nula, slicnost je 0
         return 0.0
 
     #kosinusna slicnost
-    similarity = dot_product / (norm1 * norm2)
+    similarity = sum_of_products / (norm1 * norm2)
     return similarity
     '''''
     # compute cosine similarity
     cosine = np.sum(hist1 * hist2, axis=1) / (norm(hist1, axis=1) * norm(hist2, axis=1))
 
+def mul_arr(arr1, arr2):
+    return np.array(list(map(lambda item: arr1[item] * arr2[item], range(24))))
 
     if cosine.ndim > 0:
         return np.max(cosine)  # Vraća maksimalnu sličnost u nizu
@@ -338,7 +352,8 @@ if __name__ == '__main__':
         # Mapiranje za plotovanje svih histograma u trenutnoj klasi
         list(map(lambda histogram: plot_histograms(histogram), histograms))
 
-
+    similarity = cosine_similarity(average_histograms['dog'], average_histograms['frog'])
+    print(similarity)
     # Mapiranje preko svih klasa u rečniku
     list(map(process_class, histograms_dict.keys()))
 
