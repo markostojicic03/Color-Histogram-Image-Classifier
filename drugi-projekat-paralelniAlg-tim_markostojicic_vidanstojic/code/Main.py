@@ -291,6 +291,9 @@ def cosine_similarity(hist1, hist2):
     #kosinusna slicnost
     similarity = sum_of_products / (norm1 * norm2)
     return similarity
+
+def mul_arr(arr1, arr2):
+    return np.array(list(map(lambda item: arr1[item] * arr2[item], range(24))))
     '''''
     # compute cosine similarity
     cosine = np.sum(hist1 * hist2, axis=1) / (norm(hist1, axis=1) * norm(hist2, axis=1))
