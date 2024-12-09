@@ -304,6 +304,7 @@ def image_classifier(image_path, average_histograms_dict):
     # Ispis rezultata
     print("Most similar class:", most_similar_class)
     print("Max cosine similarity:", max_similarity)
+    return image_path, most_similar_class, max_similarity
     '''
 print(hist1)
     print("------------------------------------------------------------")
@@ -323,7 +324,7 @@ if __name__ == '__main__':
     ))
 
     #print(average_histograms)
-   # image_classifier("../imageResources/primerAvion2.jpg", average_histograms)
+    image_classifier("../imageResources/primerAvion2.jpg", average_histograms)
     similarity = cosine_similarity(average_histograms['dog'], average_histograms['frog'])
     print(similarity)
 
