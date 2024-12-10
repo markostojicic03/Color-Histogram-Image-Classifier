@@ -11,10 +11,9 @@ import tarfile
 from collections import defaultdict
 import ssl
 import matplotlib
-# Onemogućavamo proveru sertifikata (privremeno rešenje)
 ssl._create_default_https_context = ssl._create_unverified_context
-matplotlib.use('TkAgg')  # Postavlja Tkinter kao backend za prikaz grafika
-plt.figure(figsize=(8, 6))  # Širina 8, visina 6 inča
+matplotlib.use('TkAgg')
+plt.figure(figsize=(8, 6))
 import matplotlib as mpl
 
 mpl.rcParams['figure.dpi'] = 80
@@ -140,26 +139,21 @@ balanced_cifar = load_balanced_cifar10(samples_per_class=100)
 
 airplane = balanced_cifar['airplane'][5]
 
-# Display the image
 plt.figure(figsize=(3, 3))
 plt.imshow(airplane)
 plt.axis('off')
 plt.show()
 
-#konstanta za broj binova
 NUM_BINS = 8
 
 def calculate_normalized_bins_histograms(imageArray):
     image = Image.fromarray(imageArray)
-    # Pretvaramo sliku u RGB format (ako nije vec u tom formatu)
     image = image.convert('RGB')
 
     width, height = image.size
 
-    # Dimenzije svakog bina
     bin_size = 256 // NUM_BINS
 
-    # Funkcija za obradu pojedinačnog piksela
     def process_pixel(pixel):
         r, g, b = pixel
         return (
@@ -168,11 +162,9 @@ def calculate_normalized_bins_histograms(imageArray):
             b // bin_size
         )
 
-    # Transformacija svih piksela slike u indekse binova
     pixels = list(image.getdata())
     bin_indices = map(process_pixel, pixels)
 
-    # Funkcija za akumulaciju vrednosti binova
     def accumulate_bins(hist, bin_index):
         r_bin, g_bin, b_bin = bin_index
         hist[0][r_bin] += 1
@@ -180,22 +172,17 @@ def calculate_normalized_bins_histograms(imageArray):
         hist[2][b_bin] += 1
         return hist
 
-    # Početni histogrami za R, G, i B komponente
     initial_hist = [
         np.zeros(NUM_BINS, dtype=np.float32),
         np.zeros(NUM_BINS, dtype=np.float32),
         np.zeros(NUM_BINS, dtype=np.float32)
     ]
 
-    # Suma preko svih binova uz pomoć reduce
     histograms = reduce(accumulate_bins, bin_indices, initial_hist)
-
-    # Normalizacija histograma
     total_pixels = width * height
 
     histograms = list(map(lambda hist: hist / total_pixels, histograms))
 
-    # Vraćamo rezultat kao numpy matricu
     return np.stack(histograms, axis=0)
 
 """
@@ -231,6 +218,8 @@ def sub_hist(full_array, hist):
 
 def sub_arr(arr1, arr2):
     return np.array(list(map(lambda item: arr1[item] + arr2[item], range(8))))
+#    return np.array(list(map(lambda i: arr1[i] + arr2[i], [0, 1, 2, 3, 4, 5, 6, 7])))
+
 
 def div_hist(avg):
     avg[0] = div_arr(avg[0], 100)
@@ -239,7 +228,7 @@ def div_hist(avg):
     return avg
 
 def div_arr(arr, x):
-    return np.array(list(map(lambda item: arr[item] / x, range(8))))
+    return reduce(lambda acc, item: acc + [item / x], arr[:8], [])
 
 def plot_histograms(histograms, bins_num=NUM_BINS):
     colors = ['red', 'green', 'blue']  #boje za svaku komponentu
@@ -270,12 +259,9 @@ def plot_histograms(histograms, bins_num=NUM_BINS):
 
 
 
-
 import numpy as np
 from numpy.linalg import norm
-#TREBA ISPRAVITI DA U KODU NEMAMO LINALG I DOT I SKALARNI PROIZVOD
 def cosine_similarity(hist1, hist2):
-    # flattenovanje histogram matrica u 1D nizove
     flat_hist1 = hist1.flatten()
     flat_hist2 = hist2.flatten()
 
@@ -283,12 +269,9 @@ def cosine_similarity(hist1, hist2):
     sum_of_products = reduce(lambda acc, number: acc + number, dot_product)
     norm1 = reduce(lambda acc, number: acc + number ** 2, flat_hist1, 0) ** 0.5
     norm2 = reduce(lambda acc, number: acc + number ** 2, flat_hist2, 0) ** 0.5
-    #provera zbog deljenja s nulom
     if norm1 == 0 or norm2 == 0:
-        #ako je jedan vektor nula, slicnost je 0
         return 0.0
 
-    #kosinusna slicnost
     similarity = sum_of_products / (norm1 * norm2)
     return similarity
 
@@ -318,19 +301,12 @@ def image_classifier(image_path, average_histograms_dict):
     )
 
     most_similar_class, max_similarity = max(result_cosine_similarity, key=lambda x: x[1])
-    # Ispis rezultata
     print("Most similar class:", most_similar_class)
     print("Max cosine similarity:", max_similarity)
     return image_path, most_similar_class, max_similarity
-    '''
-print(hist1)
-    print("------------------------------------------------------------")
-    print(hist2)
-'''
 
 
 if __name__ == '__main__':
-    # Kreiranje rečnika histograma
     histograms_dict = calculate_histogram_dict(balanced_cifar)
     
     histograms_dict_copy = deepcopy(histograms_dict)
