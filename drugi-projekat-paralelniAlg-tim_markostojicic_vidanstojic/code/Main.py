@@ -181,7 +181,7 @@ def calculate_normalized_bins_histograms(imageArray):
     histograms = reduce(accumulate_bins, bin_indices, initial_hist)
     total_pixels = width * height
 
-    histograms = list(map(lambda hist: hist / total_pixels, histograms))
+    histograms = list(map(lambda hist: div_arr(hist, total_pixels), histograms))
 
     return np.stack(histograms, axis=0)
 
@@ -203,7 +203,7 @@ def calculate_histogram_dict(balanced_cifar):
     return dict(map(calculateForOneImage, balanced_cifar.keys()))
 
 
-def calculate_average_histogram(class_name, histograms):
+def calculate_average_histogram(histograms):
 
     full_array = np.full((3, 8), 0.0)
     avg = reduce(sub_hist, histograms,full_array)
@@ -312,7 +312,7 @@ if __name__ == '__main__':
     histograms_dict_copy = deepcopy(histograms_dict)
 
     average_histograms = dict(map(
-            lambda item: (item[0], calculate_average_histogram(item[0], histograms_dict_copy.pop(item[0]))),
+            lambda item: (item[0], calculate_average_histogram(histograms_dict_copy.pop(item[0]))),
             list(histograms_dict_copy.items())
     ))
 
