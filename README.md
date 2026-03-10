@@ -1,56 +1,43 @@
-# ChromaClass: Functional Color Histogram Image Classifier
+# Color Histogram Analysis and Classification
 
 ## Project Overview
-ChromaClass is a specialized image analysis system developed to classify images based on their color distribution patterns. The project focuses on generating 3D RGB color histograms, computing average class profiles, and implementing a classifier based on cosine similarity metrics. 
+The objective of this project is to analyze color histograms in images categorized into different classes (e.g., landscapes, portraits). The system calculates RGB color histograms for each image, determines average histograms per class, and implements a simple classifier based on cosine similarity. 
 
-A primary objective of this project is the strict application of functional programming principles, ensuring the solution is built entirely without explicit loops or standard comprehensions.
-
----
-
-## Technical Constraints and Methodology
-The implementation adheres to a specific functional paradigm to ensure declarative and mathematical code structure:
-
-* Functional Programming Style: The entire solution is implemented without using explicit for or while loops, and without list or dictionary comprehensions.
-* Higher-Order Functions: The logic relies exclusively on lambda functions, map, and reduce for all data processing and aggregation tasks.
-* Custom Core Logic: Basic operations, such as determining collection lengths, are implemented manually using reduce-based logic rather than built-in functions like len.
-* Library Usage: NumPy is utilized for matrix operations and vector flattening, while following the functional constraints for all calculations.
+The implementation strictly follows a functional programming style, avoiding explicit loops and comprehensions in favor of higher-order functions.
 
 ---
 
-## Core System Functionalities
+## Programming Constraints
+The solution is built using specific functional patterns:
 
-### 1. 3D Color Histogram Generation
-The system processes individual images from a provided path to generate normalized histograms for each RGB component.
-* Binning: The color space is partitioned into a configurable number of bins, typically ranging from 8 to 16.
-* Normalization: Each histogram is normalized by the total pixel count to allow for accurate comparison between images of different resolutions.
-
-### 2. Average Class Profiling
-The system processes lists of images categorized into classes (such as landscapes or portraits) to establish a baseline color profile for each category.
-* Data Aggregation: Using map and reduce, the system aggregates histograms from all images within a specific class.
-* Mean Calculation: The total aggregate is averaged by the number of samples in the class to create a representative 2D matrix profile.
-
-### 3. Cosine Similarity Metrics
-A mathematical comparison layer is used to determine the proximity between different color profiles.
-* Vectorization: 2D histogram matrices are flattened into 1D arrays to facilitate vector calculations.
-* Similarity Calculation: The system computes the cosine similarity using dot products and norms, all handled through functional data pipelines.
-
-### 4. Automated Image Classifier
-The final module serves as a classifier that predicts the category of an unknown image.
-* Comparison Logic: The histogram of the target image is compared against the average profile of every available class.
-* Prediction Output: The system assigns the image to the class with the highest similarity score, returning the image identifier, the predicted class, and the specific similarity value.
+* No explicit for/while loops or list/dictionary comprehensions are allowed.
+* Built-in functions like len cannot be used for collection size; instead, they must be implemented via reduce.
+* The use of lambda functions, map, and reduce is required for data processing.
 
 ---
 
-## Dataset and Evaluation
-The system is designed to be evaluated using standard image datasets such as STL-10, CIFAR-10, or Caltech101. For optimal results, the classifier is typically trained on approximately 100 images per category across 4 to 5 distinct classes.
+## Core Functionalities
+
+### 1. 3D Color Histogram Calculation
+The system generates normalized histograms for the RGB components of an image.
+* The number of bins is defined as a global constant, typically between 8 and 16.
+* Each histogram is normalized by dividing it by the total number of pixels in the image.
+
+### 2. Average Class Histograms
+The system processes pairs of class labels and image paths to compute a representative profile for each category.
+* Map and reduce are used to aggregate histograms for all images within a specific class.
+* The aggregated result is divided by the number of images in the class to produce the average.
+
+### 3. Cosine Similarity Calculation
+To compare histograms, the system calculates their cosine similarity.
+* 2D histogram matrices are flattened into 1D arrays.
+* Functional pipelines (map/reduce) are used to compute dot products and norms required for the similarity score.
+
+### 4. Histogram-Based Classifier
+A classifier predicts an image's class by comparing its histogram to the average histograms of all available classes.
+* The image is assigned to the class with the highest cosine similarity.
+* The function returns the image identifier, the predicted class, and the similarity value.
 
 ---
 
-## Execution and Submission
-This project is part of the Image Analysis curriculum and is managed via GitHub Classroom.
-1. All implementation logic must reside within a single Python source file.
-2. The repository must include sample images and relevant JSON configurations if required by the workflow.
-3. The execution flow follows the functional pipeline from raw image input to final similarity-based classification.
-
----
-Project developed as part of the Parallel Algorithms course curriculum.
+Developed for the Parallel Algorithms course.
